@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ note.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ note.title }}</h1>
+    <div class="actions">
+        <a href="{% url 'ai_assistant:summarize_note' note.pk %}" class="btn btn-secondary">✨ Summarize with AI</a>
+        <a href="{% url 'notes:note_update' note.pk %}" class="btn btn-secondary">Edit</a>
+        <a href="{% url 'notes:note_delete' note.pk %}" class="btn btn-danger">Delete</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="item-meta">
+        {% if note.subject %}Subject: {{ note.subject.name }} · {% endif %}
+        Updated {{ note.updated_at|date:"M d, Y H:i" }}
+    </div>
+    <div class="item-meta" style="margin-bottom:12px;">
+        {% for cat in note.categories.all %}<span class="badge badge-medium">{{ cat.name }}</span>{% endfor %}
+    </div>
+    <div style="white-space:pre-wrap;line-height:1.6;">{{ note.content }}</div>
+</div>
+
+{% if note.ai_summary %}
+<div class="card">
+    <h3>✨ AI Summary</h3>
+    <div style="white-space:pre-wrap;">{{ note.ai_summary }}</div>
+</div>
+{% endif %}
+
+<a href="{% url 'notes:note_list' %}">← Back to notes</a>
+{% endblock %}

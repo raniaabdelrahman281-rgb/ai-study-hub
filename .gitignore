@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.sqlite3
+.env
+db.sqlite3
+/staticfiles/
+/media/*
+!/media/profile_pics/.gitkeep
+!/media/resource_thumbs/.gitkeep
+venv/
+env/
+.venv/
+*.egg-info/
+.DS_Store
+*.log

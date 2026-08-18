@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Notes{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>📝 Notes</h1>
+    <div class="actions">
+        <a href="{% url 'notes:category_list' %}" class="btn btn-secondary">Categories</a>
+        <a href="{% url 'notes:note_create' %}" class="btn">+ New Note</a>
+    </div>
+</div>
+
+<div class="search-box">
+    <input type="text" id="note-live-search" placeholder="Live search notes...">
+    <div id="search-results"></div>
+</div>
+
+<div class="card-grid">
+    {% for note in page_obj %}
+    <div class="card">
+        <div class="item-title"><a href="{{ note.get_absolute_url }}">{{ note.title }}</a></div>
+        <p class="item-meta">{{ note.content|truncatewords:20 }}</p>
+        <div class="item-meta">
+            {% for cat in note.categories.all %}<span class="badge badge-medium">{{ cat.name }}</span>{% endfor %}
+        </div>
+        <div class="item-meta">Updated {{ note.updated_at|date:"M d, Y" }}</div>
+    </div>
+    {% empty %}
+    <p class="item-meta">No notes yet. <a href="{% url 'notes:note_create' %}">Write your first note</a>.</p>
+    {% endfor %}
+</div>
+
+{% include "partials/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant{% endblock %}
+{% block content %}
+<div class="page-header"><h1>🤖 AI Study Assistant</h1></div>
+
+<div class="ai-feature-grid">
+    <a href="{% url 'ai_assistant:chat' %}" class="card ai-feature-card">
+        <div class="icon">💬</div>
+        <h3>Chat Assistant</h3>
+        <p class="item-meta">Ask questions and get study help</p>
+    </a>
+    <a href="{% url 'ai_assistant:summarize' %}" class="card ai-feature-card">
+        <div class="icon">✂️</div>
+        <h3>Summarize Notes</h3>
+        <p class="item-meta">Turn long notes into key points</p>
+    </a>
+    <a href="{% url 'ai_assistant:quiz' %}" class="card ai-feature-card">
+        <div class="icon">❓</div>
+        <h3>Generate Quiz</h3>
+        <p class="item-meta">Test yourself on any material</p>
+    </a>
+    <a href="{% url 'ai_assistant:flashcards' %}" class="card ai-feature-card">
+        <div class="icon">🃏</div>
+        <h3>Generate Flashcards</h3>
+        <p class="item-meta">Create Q&A flashcards for revision</p>
+    </a>
+    <a href="{% url 'ai_assistant:explain_error' %}" class="card ai-feature-card">
+        <div class="icon">🐞</div>
+        <h3>Explain Programming Error</h3>
+        <p class="item-meta">Understand error messages, in plain English</p>
+    </a>
+</div>
+
+{% if conversations %}
+<h3 style="margin-top:28px;">Recent AI Activity</h3>
+<div class="item-list">
+    {% for c in conversations %}
+    <div class="item-row">
+        <div>
+            <span class="badge badge-medium">{{ c.get_feature_display }}</span>
+            <div class="item-meta">{{ c.prompt|truncatewords:12 }}</div>
+        </div>
+        <div class="item-meta">{{ c.created_at|date:"M d, H:i" }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

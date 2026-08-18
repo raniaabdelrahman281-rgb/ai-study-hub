@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Profile - AI Study Hub{% endblock %}
+{% block content %}
+<div class="page-header"><h1>My Profile</h1></div>
+
+<div class="card" style="max-width:560px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;">
+        {% endif %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Save changes</button>
+    </form>
+</div>
+
+<div class="card" style="max-width:560px;">
+    <h3>Account</h3>
+    <p class="item-meta">
+        Email verified:
+        {% if profile.is_email_verified %}<span class="badge badge-low">Yes</span>{% else %}<span class="badge badge-high">No</span>{% endif %}
+    </p>
+    <a href="{% url 'accounts:change_password' %}" class="btn btn-secondary btn-sm">Change password</a>
+</div>
+{% endblock %}

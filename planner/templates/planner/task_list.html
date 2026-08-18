@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Study Planner{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>📋 Study Planner</h1>
+</div>
+
+<div class="planner-actions">
+    <a href="{% url 'planner:task_create' %}" class="planner-action-card action-add">
+        <span class="planner-action-icon">➕</span>
+        <span class="planner-action-label">Add Task</span>
+    </a>
+    <a href="{% url 'planner:subject_list' %}" class="planner-action-card action-subjects">
+        <span class="planner-action-icon">📚</span>
+        <span class="planner-action-label">Manage Subjects</span>
+    </a>
+    <a href="{% url 'planner:task_export_pdf' %}?{{ request.GET.urlencode }}" class="planner-action-card action-export">
+        <span class="planner-action-icon">📄</span>
+        <span class="planner-action-label">Export PDF</span>
+    </a>
+</div>
+
+
+<form method="get" class="filters">
+    <input type="text" name="q" placeholder="Search tasks..." value="{{ request.GET.q }}">
+    <select name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+    </select>
+    <select name="priority" onchange="this.form.submit()">
+        <option value="">All priorities</option>
+        <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Low</option>
+        <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>High</option>
+    </select>
+    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+</form>
+
+<div class="item-list">
+    {% for task in page_obj %}
+    <div class="item-row {% if task.is_completed %}completed{% endif %}" style="{% if task.is_completed %}opacity:0.6;{% endif %}">
+        <div>
+            <div class="item-title" style="{% if task.is_completed %}text-decoration:line-through;{% endif %}">{{ task.title }}</div>
+            <div class="item-meta">
+                {% if task.subject %}{{ task.subject.name }} · {% endif %}
+                {% if task.due_date %}Due {{ task.due_date }}{% if task.is_overdue %} ⚠️ overdue{% endif %}{% else %}No due date{% endif %}
+            </div>
+        </div>
+        <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+        <div class="actions">
+            {% csrf_token %}
+            <a href="#" class="btn btn-sm btn-secondary task-toggle-btn" data-url="{% url 'planner:task_toggle_complete' task.pk %}">
+                {% if task.is_completed %}↩️ Undo{% else %}✅ Complete{% endif %}
+            </a>
+            <a href="{% url 'planner:task_update' task.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+            <a href="{% url 'planner:task_delete' task.pk %}" class="btn btn-sm btn-danger">Delete</a>
+        </div>
+    </div>
+    {% empty %}
+    <p class="item-meta">No tasks yet. <a href="{% url 'planner:task_create' %}">Add your first task</a>.</p>
+    {% endfor %}
+</div>
+
+{% include "partials/pagination.html" %}
+{% endblock %}

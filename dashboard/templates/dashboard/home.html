@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Welcome back, {{ request.user.first_name|default:request.user.username }} 👋</h1>
+</div>
+
+<div class="card-grid">
+    <div class="card stat-card">
+        <div class="stat-value">{{ total_tasks }}</div>
+        <div class="stat-label">Total Tasks</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value">{{ total_notes }}</div>
+        <div class="stat-label">Total Notes</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-value">{{ total_resources }}</div>
+        <div class="stat-label">Total Resources</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;" class="dash-grid">
+    <div class="card">
+        <h3>⏰ Upcoming Tasks</h3>
+        <div class="item-list">
+            {% for task in upcoming_tasks %}
+            <div class="item-row">
+                <div class="item-title">{{ task.title }}</div>
+                <span class="item-meta">{{ task.due_date }}</span>
+                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+            </div>
+            {% empty %}
+            <p class="item-meta">Nothing due soon. 🎉</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🕒 Recent Activity</h3>
+        <div class="item-list">
+            {% for item in recent_activity %}
+            <div class="item-row">
+                <div>
+                    <span class="badge badge-medium">{{ item.type }}</span>
+                    {% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}<span class="item-title">{{ item.title }}</span>{% endif %}
+                </div>
+                <span class="item-meta">{{ item.time|date:"M d, H:i" }}</span>
+            </div>
+            {% empty %}
+            <p class="item-meta">No activity yet — go add a task or a note!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <h3>✅ Tasks Status</h3>
+        <canvas id="statusChart" height="140"></canvas>
+    </div>
+    <div class="card">
+        <h3>📊 Tasks by Priority</h3>
+        <canvas id="priorityChart" height="140"></canvas>
+    </div>
+    <div class="card">
+        <h3>🗂️ Notes by Category</h3>
+        <canvas id="categoryChart" height="140"></canvas>
+    </div>
+</div>
+
+<style>
+@media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr !important; } }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/vendor/chart.umd.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const completed = {{ completed_tasks|default:0 }};
+    const pending = {{ pending_tasks|default:0 }};
+    const low = {{ priority_counts.low|default:0 }};
+    const medium = {{ priority_counts.medium|default:0 }};
+    const high = {{ priority_counts.high|default:0 }};
+
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js failed to load from static files.');
+        return;
+    }
+    Chart.defaults.font.size = 11;
+
+    // Tasks Status — circular (doughnut)
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        if (completed + pending === 0) {
+            statusCtx.replaceWith(document.createTextNode('No tasks yet.'));
+        } else {
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending'],
+                    datasets: [{ data: [completed, pending], backgroundColor: ['#E11D48', '#F59E0B'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
+            });
+        }
+    }
+
+    // Tasks by Priority — column bar chart, each bar a different warm color
+    const ctx = document.getElementById('priorityChart');
+    if (ctx) {
+        if (low + medium + high === 0) {
+            ctx.replaceWith(document.createTextNode('No tasks yet.'));
+        } else {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Low', 'Medium', 'High'],
+                    datasets: [{
+                        data: [low, medium, high],
+                        backgroundColor: ['#FBBF24', '#F97316', '#E11D48'],
+                        borderRadius: 5,
+                        maxBarThickness: 34,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+    }
+
+    // Notes by Category — column bar chart, each bar a different warm color
+    const catCtx = document.getElementById('categoryChart');
+    const catLabels = {{ notes_by_category_labels|safe }};
+    const catData = {{ notes_by_category_data|safe }};
+
+    if (catCtx) {
+        if (catData.length === 0 || catData.reduce((a, b) => a + b, 0) === 0) {
+            catCtx.replaceWith(document.createTextNode('No notes yet.'));
+        } else {
+            const palette = ['#E11D48', '#F59E0B', '#F97316', '#DB2777', '#B91C1C', '#EA580C', '#FBBF24', '#9F1239'];
+            new Chart(catCtx, {
+                type: 'bar',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catData,
+                        backgroundColor: catLabels.map((_, i) => palette[i % palette.length]),
+                        borderRadius: 5,
+                        maxBarThickness: 34,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

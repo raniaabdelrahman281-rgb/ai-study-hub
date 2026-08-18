@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Explain Error{% endblock %}
+{% block content %}
+<div class="page-header"><h1>🐞 Explain Programming Error</h1></div>
+
+<form method="post" class="card">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Explain</button>
+</form>
+
+{% if result %}
+<div class="card">
+    <h3>Explanation</h3>
+    <div style="white-space:pre-wrap;">{{ result }}</div>
+</div>
+{% endif %}
+{% endblock %}

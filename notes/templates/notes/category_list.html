@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<div class="page-header"><h1>🏷️ Categories</h1></div>
+
+<div class="card" style="max-width:420px;">
+    <h3>Add a category</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Add</button>
+    </form>
+</div>
+
+<div class="item-list">
+    {% for cat in categories %}
+    <div class="item-row">
+        <div class="item-title">{{ cat.name }}</div>
+        <form method="post" action="{% url 'notes:category_delete' cat.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+    </div>
+    {% empty %}
+    <p class="item-meta">No categories yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
